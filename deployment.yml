@@ -1,0 +1,41 @@
+name: AWS Terraform Deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Terraform Setup
+        uses: hashicorp/setup-terraform@v3
+
+      # Bootstrap S3 backend
+      - name: Create Terraform State Bucket
+        run: |
+          # Bootstrap Terraform configuration
+          # Apply S3 bucket configuration here
+
+      # Configure remote backend
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
