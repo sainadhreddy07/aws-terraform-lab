@@ -10,7 +10,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket       = "remote-state-bucket"
+    bucket       = "290459632348-s3-bucket-001"
     key          = "aws-lab/terraform.tfstate"
     region       = "ap-south-1"
     use_lockfile = true
