@@ -2,6 +2,12 @@ name: AWS Terraform Deployment
 
 on:
   workflow_dispatch:
+    inputs:
+      apply_changes:
+        description: "Apply Terraform changes after plan"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -15,27 +21,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ap-south-1
 
-      - name: Terraform Setup
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # Bootstrap S3 backend
-      - name: Create Terraform State Bucket
+      # Bootstrap the S3 state bucket
+      - name: Bootstrap Terraform State Bucket
+        working-directory: bootstrap
         run: |
-          # Bootstrap Terraform configuration
-          # Apply S3 bucket configuration here
+          terraform init
+          terraform validate
+          terraform plan
+          terraform apply -auto-approve
 
-      # Configure remote backend
-      - name: Initialize Terraform
+      # Main Terraform deployment
+      - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Validate
+        run: terraform validate
+
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        if: ${{ inputs.apply_changes }}
+        run: terraform apply -auto-approve tfplan
