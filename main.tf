@@ -8,6 +8,13 @@ terraform {
       version = "~> 6.0"
     }
   }
+
+  backend "s3" {
+    bucket       = var.state_bucket_name
+    key          = "aws-lab/terraform.tfstate"
+    region       = "ap-south-1"
+    use_lockfile = true
+  }
 }
 
 provider "aws" {
